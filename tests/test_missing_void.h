@@ -1,6 +1,12 @@
-#include "hej_mor.h"
+/*
 
-#define LOLOLO 5
+Find cases of 'f()' instead of 'f(void)' in function declarations / definitions
+
+*/
+
+#include "non_existing_file.h"
+
+#define STUPID_MACRO 5
 
 extern int x;
 
