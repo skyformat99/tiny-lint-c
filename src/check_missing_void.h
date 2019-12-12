@@ -2,7 +2,6 @@
 #define __CHECK_MISSING_VOID_H__
 
 
-#include "lexer.h"
 #include "source.h"
 
 void check_missing_void_init(void);
