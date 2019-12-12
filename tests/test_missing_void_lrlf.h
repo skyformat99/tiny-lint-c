@@ -1,6 +1,13 @@
-#include "hej_mor.h"
+/*
 
-#define LOLOLO 5
+Tests if windows-style line endings work (\r\n vs just \n)
+
+*/
+
+
+#include "non_existing_file.h"
+
+#define STUPID_MACRO 5
 
 extern int x;
 
