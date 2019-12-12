@@ -1,6 +1,7 @@
 /*
 
-Tests if windows-style line endings work (\r\n vs just \n)
+Find cases of 'f()' instead of 'f(void)' in function declarations / definitions
+(Also tests if windows-style line endings work, e.g. "\r\n" vs "\n")
 
 */
 
