@@ -1,7 +1,6 @@
 # tiny-lint-c
-Small portable lexical analysis in C
----
-
+# A small portable lexical analysis in C
+### Description
 
 A small [linter](https://en.wikipedia.org/wiki/Lint_(software)) written in C99, demonstrating [static analysis](https://en.wikipedia.org/wiki/Static_program_analysis) at the [lexical](https://en.wikipedia.org/wiki/Lexical_analysis) level of abstraction.
 
