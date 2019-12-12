@@ -1,5 +1,5 @@
 # tiny-lint-c
-**Small portable lexical analysis in C**
+Small portable lexical analysis in C
 ---
 
 
