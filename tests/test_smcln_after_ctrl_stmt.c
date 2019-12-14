@@ -1,6 +1,6 @@
 
 
-int main()
+int main(void)
 {
   int x = rand();
   if (x > 42);
