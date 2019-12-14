@@ -14,7 +14,7 @@ Static analysis at the lexical abstraction level
 #include "source.h"
 #include "check_missing_void.h"        /* checks fundecls for missing (void), e.g. f() vs f(void) <-- correct */
 #include "check_misleading_var_name.h" /* checks if variable names are misleading, e.g. if u32var is of type int8_t */
-
+#include "check_smcln_after_ctrl_stmt.h"
 
 /* max size of token-buffer for each file */
 #define MAXTOKENBUFSIZE (16*1024*1024)
@@ -96,6 +96,7 @@ static void scan_file(char* src_file)
     /* Initialize checker(s) */
     check_missing_void_init();
     check_misleading_var_name_init();
+    check_smcln_after_ctrl_stmt_init();
 
     while (l.buffer[0] != 0)
     {
@@ -114,6 +115,7 @@ static void scan_file(char* src_file)
       int tok_idx = (ntokens - 1);
       check_missing_void_new_token(&s, toks, tok_idx);
       check_misleading_var_name_new_token(&s, toks, tok_idx);
+      check_smcln_after_ctrl_stmt_new_token(&s, toks, tok_idx);
     }
   }
   /* Clean up memory dynamically allocated by src_init(). */
