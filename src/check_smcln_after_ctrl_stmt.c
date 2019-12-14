@@ -1,4 +1,4 @@
-#include "check_missing_void.h"
+#include "check_smcln_after_ctrl_stmt.h"
 #include <stdio.h>
 
 
