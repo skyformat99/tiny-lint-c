@@ -52,7 +52,7 @@ void check_smcln_after_ctrl_stmt_new_token(struct source_file* s, struct token* 
     if (toks[i].toktyp == OP_LBRACE)
     {
       const char* str_ifw[] = { "if", "while", "for" };
-      fprintf(stderr, "[%s:%d] (warning) suspicious semicolon after %s-stmt.\n", s->file_path, toks[i].lineno, str_ifw[if_while_for] );
+      fprintf(stdout, "[%s:%d] (warning) suspicious semicolon after %s-stmt.\n", s->file_path, toks[i - 1].lineno, str_ifw[if_while_for] );
     }
     state = 0;
   }
