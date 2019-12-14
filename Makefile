@@ -1,6 +1,6 @@
 BIN_NAME   := tlint
-CXX        := gcc
-CXX_FLAGS  := -Wall -Wextra -Wundef -Ofast
+CC         := gcc
+CC_FLAGS   := -Wall -Wextra -Wundef -Ofast
 SRC_DIR    := src
 OBJ_DIR    := build
 BUILD_DIR  := ./build
@@ -16,10 +16,10 @@ endif
 all: $(BIN_NAME)
 
 $(BIN_NAME): $(OBJ_FILES)
-	$(CXX) -o $@ $^
+	$(CC) -o $@ $^ $(CC_FLAGS)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%$(SRC_EXT)
-	$(CXX) $(CXX_FLAGS) -c -o $@ $<
+	$(CC) $(CXX_FLAGS) -c -o $@ $<
 
 
 clean:
@@ -27,6 +27,7 @@ clean:
 	rm -f ./$(BIN_NAME)
 
 test:
-	ls $(TST_DIR)/*.[ch] | col > $(BUILD_DIR)/c_files.txt
+	find $(TST_DIR) -name "*.[ch]"  > $(BUILD_DIR)/c_files.txt
+	find $(SRC_DIR) -name "*.[ch]" >> $(BUILD_DIR)/c_files.txt
 	./$(BIN_NAME) $(BUILD_DIR)/c_files.txt
 	
