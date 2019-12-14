@@ -36,9 +36,16 @@ void check_smcln_after_ctrl_stmt_new_token(struct source_file* s, struct token* 
   {
     state = 2;
   }
-  else if ((state == 2) && (toks[i].toktyp == OP_SEMICOLON))
+  else if (state == 2)
   {
-    state = 3;
+    if (toks[i].toktyp == OP_SEMICOLON)
+    {
+      state = 3;
+    }
+    else
+    {
+      state = 0;
+    }
   }
   else if (state == 3)
   {
