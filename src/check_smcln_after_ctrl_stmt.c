@@ -1,6 +1,6 @@
 #include "check_smcln_after_ctrl_stmt.h"
 #include <stdio.h>
-
+#include <string.h>
 
 
 static int paren_lvl = 0; /* balance of '(', ')' */
