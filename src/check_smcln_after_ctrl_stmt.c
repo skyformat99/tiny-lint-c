@@ -57,7 +57,7 @@ void check_smcln_after_ctrl_stmt_new_token(struct source_file* s, struct token* 
     state = 0;
   }
 
-  else if (toks[i].toktyp == OP_LPAREN) { paren_lvl += 1; }
+       if (toks[i].toktyp == OP_LPAREN) { paren_lvl += 1; }
   else if (toks[i].toktyp == OP_RPAREN) { paren_lvl -= 1; }
 
   if (paren_lvl < 0) { paren_lvl = 0; }
