@@ -1,10 +1,11 @@
 BIN_NAME   := tlint
 CC         := gcc
-CC_FLAGS   := -Wall -Wextra -Wundef -Ofast
+CC_FLAGS   := -Wall -Wextra -Wundef -Wconversion -Ofast
 SRC_DIR    := src
 OBJ_DIR    := build
 BUILD_DIR  := ./build
 TST_DIR    := ./tests
+TST_FILE   := $(BUILD_DIR)/files.txt
 SRC_EXT    := .c
 SRC_FILES  := $(wildcard $(SRC_DIR)/*$(SRC_EXT))
 OBJ_FILES  := $(addprefix $(OBJ_DIR)/,$(notdir $(SRC_FILES:$(SRC_EXT)=.o)))
@@ -23,11 +24,18 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%$(SRC_EXT)
 
 
 clean:
-	rm -rf $(OBJ_FILES)
+	rm -rf $(BUILD_DIR)/*
 	rm -f ./$(BIN_NAME)
 
 test:
-	find $(TST_DIR) -name "*.[ch]"  > $(BUILD_DIR)/c_files.txt
-	find $(SRC_DIR) -name "*.[ch]" >> $(BUILD_DIR)/c_files.txt
-	./$(BIN_NAME) $(BUILD_DIR)/c_files.txt
-	
+	# First and most importantly: scan the source of the tool itself, just to make a point
+	@echo "Tool source code:   `./$(BIN_NAME) $(BUILD_DIR)/own_src | wc -l` defects detected."
+	# Then generate a list of test-files for the regression suite
+	find $(TST_DIR) -name "*.[ch]" > $(TST_FILE)
+	# - For each test-file, each line with an error contains the line 'HIT' - we count how many.
+	#   That number is compared to the number of lines (warnings) output by the tool.
+	@echo "Regression suite:   `./$(BIN_NAME) $(TST_FILE) | wc -l` / `grep -Rn HIT $(TST_DIR) --include=*.[ch] | wc -l` defects detected."
+	find $(SRC_DIR) -name "*.[ch]" > $(BUILD_DIR)/own_src.txt
+
+
+
