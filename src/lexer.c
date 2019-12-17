@@ -43,16 +43,12 @@
 
 
 #include "lexer.h"
+#include "str.h"
 #include <assert.h> /* for assert            */
 #include <stdlib.h> /* for malloc() + free() */
 #include <stdio.h>  /* for printf + fgetc    */
 #include <stdint.h> /* for intX_t            */
 #include <string.h> /* for strncmp           */
-
-#define STR_BUF_SZ (32 * 1024 * 1024) /* 32 MB buffer for token symbols */
-static char str_buffer[STR_BUF_SZ];
-static int  idx;
-
 
 
 
@@ -79,14 +75,12 @@ void lexer_reset_state(struct lexer* l)
   l->token_length = 0;
   l->cur_lineno = 1;
   l->cur_byteno = 0;
-
-  idx = 0;
 }
 
 void lexer_init(struct lexer* l)
 {
   l->nkeywords = 0;
-  l->continue_on_error = 0;//1;//0;
+  l->continue_on_error = 0;//1;
   lexer_reset_state(l);
 }
 
@@ -461,37 +455,14 @@ static void print_token(struct lexer* l, struct token* t)
   fprintf(stdout, "%-15s : '%s' @ %u:%u \n", tok_knds[t->tokknd], t->symbol, t->lineno, t->byteno);
 }
 
-char* _strdup(const char* str)
-{
-  char* ret = &str_buffer[idx];
-  int i;
-  for (i = 0; i < (STR_BUF_SZ - idx); ++i)
-  {
-    str_buffer[idx + i] = str[i];
-    if (str[i] == 0)
-      break;
-  }
-  idx += i + 1;
-  return ret;
-}
 
 /* emit a token built from characters accumulated in token_buffer. */
 static void emit(struct lexer* l, struct token* next_tok, int token_kind, int token_type)
 {
   expect(l, l->token_length > 0);
   l->token_buffer[l->token_length] = 0;
-
-  //next_tok->symbol = l->token_buffer;
-  
-/*
-  strcpy(lexer_str_buf[lexer_str_idx], l->token_buffer);
-  next_tok->symbol = lexer_str_buf[lexer_str_idx];
-  lexer_str_idx += 1;
-  if (lexer_str_idx > 7) lexer_str_idx = 0;
-*/
-  next_tok->symbol = _strdup(l->token_buffer);
-
-  next_tok->symlen = l->token_length - 1;
+  next_tok->symbol = str_copy(l->token_buffer);
+  next_tok->symlen = l->token_length;
   next_tok->tokknd = token_kind;
   next_tok->toktyp = token_type;
   next_tok->lineno = l->cur_lineno;
