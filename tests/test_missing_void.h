@@ -11,17 +11,17 @@ Find cases of 'f()' instead of 'f(void)' in function declarations / definitions
 extern int x;
 
 
-void function1();
+void function1();      /* HIT */
 void function2(void);
 
 
-void function3 ()
+void function3 ()      /* HIT */
 {
   return 42;
 }
 
 
 static const unsigned int const* function4(void);
-static const unsigned int const* function5();
+static const unsigned int const* function5(); /* HIT */
 
 
