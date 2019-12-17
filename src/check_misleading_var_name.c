@@ -15,14 +15,16 @@ Examples of incorrect naming:
 
 #include "check_misleading_var_name.h"
 #include <stdio.h>  /* fprintf */
-#include <string.h> /* strcmp */
+#include <string.h> /* strncmp */
 
 
 
-static const char* prefixes[] = { "s8",     "s16",     "s32",     "s64",     "i8",     "i16",     "i32",     "i64",     "u8",      "u16",      "u32",      "u64",      };
-static const char* types[]    = { "int8_t", "int16_t", "int32_t", "int64_t", "int8_t", "int16_t", "int32_t", "int64_t", "uint8_t", "uint16_t", "uint32_t", "uint64_t", };
-static const int   nprefixes  = sizeof(prefixes)/sizeof(*prefixes);
-static const int   ntypes     = sizeof(types)/sizeof(*types);
+static const char* prefixes[]  = { "s8",     "s16",     "s32",     "s64",     "i8",     "i16",     "i32",     "i64",     "u8",      "u16",      "u32",      "u64",      };
+static const char* types[]     = { "int8_t", "int16_t", "int32_t", "int64_t", "int8_t", "int16_t", "int32_t", "int64_t", "uint8_t", "uint16_t", "uint32_t", "uint64_t", };
+static const int   ltypes[]    = { 6,        7,         7,         7,         6,        7,         7,         7,         6,         7,          7,          7,          };
+static const int   lprefixes[] = { 2,        3,         3,         3,         2,        3,         3,         3,         2,         3,          3,          3,          };
+static const int   nprefixes   = sizeof(prefixes)/sizeof(*prefixes);
+static const int   ntypes      = sizeof(types)/sizeof(*types);
 
 
 void check_misleading_var_name_init(void)
@@ -51,14 +53,16 @@ void check_misleading_var_name_new_token(struct source_file* s, struct token* to
   for (i = 0; i < ntypes; ++i)
   {
     /* found a type we have a rule for: */
-    if (strcmp(var_type, types[i]) == 0)
+    if (strncmp(var_type, types[i], ltypes[i]) == 0)
     {
       for (j = 0; j < nprefixes; ++j)
       {
         /* when i == j, we have the correct type prefix -> skip that case */
         if (    (j != i)
-             && (strncmp(var_name, prefixes[j], strlen(prefixes[j])) == 0) /* does var_name match a known prefix? */
-             && (strncmp(types[i], types[j], strlen(types[i])) != 0))      /* signed types can be prefixed I and S, check this here */
+             && (strncmp(var_name, prefixes[j], lprefixes[j]) == 0) /* does var_name match a known prefix? */
+             && (strncmp(types[i], types[j], ltypes[i]) != 0)       /* signed types can be prefixed I and S, check this here */
+             && (    (var_name[lprefixes[j]+1] < '0')               /* next char in var_name must be a digit to match */
+                  || (var_name[lprefixes[j]+1] > '9')))
         {
           fprintf(stdout, "[%s:%d] (warning) Variable of type '%s' was named '%s'.\n", s->file_path, toks[tok_idx].lineno, var_type, var_name);
           return; /* maximum one warning pr. token */
