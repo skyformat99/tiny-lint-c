@@ -30,12 +30,9 @@ void check_assign_in_ctrl_stmt_new_token(struct source_file* s, struct token* to
 {
   int i = tok_idx;
 
-  if (    (    (strncmp("if", toks[i].symbol, 2)    == 0)
-            && (toks[i].symlen == 2)        )
-       || (    (strncmp("while", toks[i].symbol, 5) == 0)
-            && (toks[i].symlen == 5)        )
-       || (    (strncmp("for", toks[i].symbol, 3)   == 0)
-            && (toks[i].symlen == 3)        ))
+  if (    (toks[i].toktyp == KW_IF)
+       || (toks[i].toktyp == KW_FOR)
+       || (toks[i].toktyp == KW_WHILE))
   {
     found_defect = 0;
     state = 1;
@@ -48,7 +45,7 @@ void check_assign_in_ctrl_stmt_new_token(struct source_file* s, struct token* to
       case 'f': if_while_for = 2; break;
     }
   }
-  else if ((state == 1) )
+  else if (state == 1)
   {
     if (toks[i].symbol[0] == ';')
     {
