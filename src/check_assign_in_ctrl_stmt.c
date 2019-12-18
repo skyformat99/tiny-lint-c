@@ -1,95 +1,123 @@
-#include "check_assign_in_ctrl_stmt.h"
+#include "check_smcln_after_ctrl_stmt.h"
 #include <stdio.h>
-#include <string.h> /* strncmp */
 
 
-static int paren_lvl = 0; /* balance of '(', ')' */
+static int paren_lvl = 0;    /* balance of '(', ')' */
+static int brace_lvl = 0;    /* balance of '{', '}' */
 static int paren_lvl_s1 = 0; /* balance of '(', ')' */
+static int do_brace_lvl = 0;
 static int state = 0;
 static int if_while_for = 0;
-static int nsemicolons_s1 = 0;
-static int ncommas_s1 = 0;
-static int ncommas_defect = 0;
-static int found_defect = 0;
-
+static int seen_do = 0;
+static int seen_while = 0;
 
 
 /* reset balance counter when loading new file */
-void check_assign_in_ctrl_stmt_init(void)
+void check_smcln_after_ctrl_stmt_init(void)
 {
   paren_lvl = 0;
+  paren_lvl_s1 = 0;
   state = 0;
   if_while_for = 0;
-  paren_lvl_s1 = 0;
-  ncommas_s1 = 0;
-  ncommas_defect = 0;
-  found_defect = 0;
+  seen_do = 0;
+  seen_while = 0;
+  do_brace_lvl = 0;
 }
 
-void check_assign_in_ctrl_stmt_new_token(struct source_file* s, struct token* toks, int tok_idx)
+void check_smcln_after_ctrl_stmt_new_token(struct source_file* s, struct token* toks, int tok_idx)
 {
   int i = tok_idx;
 
-  if (    (toks[i].toktyp == KW_IF)
-       || (toks[i].toktyp == KW_FOR)
-       || (toks[i].toktyp == KW_WHILE))
+  /* Inside do-while stmt */
+  if (    (state == -1)
+       && (toks[i].toktyp == OP_SEMICOLON)
+       && ((do_brace_lvl - brace_lvl) == 0))
   {
-    found_defect = 0;
-    state = 1;
-    nsemicolons_s1 = 0;
-    paren_lvl_s1 = paren_lvl;
-    switch (toks[i].symbol[0])
+    state = 0;
+  }
+  /* Default state */
+  else if (state == 0)
+  {
+    if (    (toks[i - 1].toktyp == KW_DO)
+         && (toks[  i  ].toktyp == OP_LBRACE))
     {
-      case 'i': if_while_for = 0; break;
-      case 'w': if_while_for = 1; break;
-      case 'f': if_while_for = 2; break;
+      state = -1;
+      do_brace_lvl = brace_lvl;
+    }
+    else if (    (toks[i].toktyp == KW_IF)
+              || (toks[i].toktyp == KW_FOR)
+              || (toks[i].toktyp == KW_WHILE))
+    {
+      state = 1;
+      paren_lvl_s1 = paren_lvl;
+      switch (toks[i].symbol[0])
+      {
+        case 'i': if_while_for = 0;                 break;
+        case 'w': if_while_for = 1; seen_while = 1; break;
+        case 'f': if_while_for = 2;                 break;
+      }
     }
   }
+  /* Begin control-stmt */
   else if (state == 1)
   {
-    if (toks[i].symbol[0] == ';')
+    if (toks[i].toktyp == OP_LPAREN)
     {
-      nsemicolons_s1 += 1;
-    }
-    else if (toks[i].symbol[0] == ',')
-    {
-      ncommas_s1 += 1;
+      switch (toks[i - 1].symbol[0])
+      {
+        case 'i': if (toks[i - 1].symlen != 2) state = 4; break;
+        case 'w': if (toks[i - 1].symlen != 5) state = 4; break;
+        case 'f': if (toks[i - 1].symlen != 3) state = 4; break;
+      }
     }
 
     if (    (toks[i].toktyp == OP_RPAREN)
          && ((paren_lvl - paren_lvl_s1) == 1))
     {
-      state = 0;
-      if (found_defect && (ncommas_s1 == ncommas_defect))
-      {
-        const char* str_ifw[] = { "if", "while", "for" };
-        if (if_while_for != 2 || ((nsemicolons_s1 == 3) ||  (nsemicolons_s1 == 1))) /* for-loop? then check middle expression Y in 'FOR ( X ; Y ; Z )' */
-        {
-          fprintf(stdout, "[%s:%d] (warning) Assignment in expression controlling program flow (%s-stmt).\n", s->file_path, toks[i - 1].lineno, str_ifw[if_while_for]);
-        }
-      }
+      state = 2;
     }
-    else if (    ((paren_lvl - paren_lvl_s1) == 1)
-              && (    (toks[i].toktyp == OP_ASSIGN)
-                   || (toks[i].toktyp == OP_ASSIGN_LSH)
-                   || (toks[i].toktyp == OP_ASSIGN_RSH)
-                   || (toks[i].toktyp == OP_ASSIGN_PLUS)
-                   || (toks[i].toktyp == OP_ASSIGN_MINUS)
-                   || (toks[i].toktyp == OP_ASSIGN_MULTIPLY)
-                   || (toks[i].toktyp == OP_ASSIGN_DIVIDE)
-                   || (toks[i].toktyp == OP_ASSIGN_AND)
-                   || (toks[i].toktyp == OP_ASSIGN_OR)
-                   || (toks[i].toktyp == OP_ASSIGN_XOR))     )
+    else if (toks[i].toktyp == OP_SEMICOLON && if_while_for != 2)
     {
-      ncommas_defect = ncommas_s1;
-      found_defect = 1;
+      state = 0; /* goto 0 */
+      seen_while = 0;
+      seen_do = 0;
     }
   }
+  /* Control-stmt ended, check for semi-colon */
+  else if (state == 2)
+  {
+    if (toks[i].toktyp == OP_SEMICOLON)
+    {
+      state = 3;
+    }
+    else
+    {
+      state = 0; /* goto 0 */
+      seen_while = 0;
+      seen_do = 0;
+    }
+  }
+  /* Seen semi-colon after ctrl-stmt, now check if it looks like it wasn't supposed to be there */
+  else if (state == 3)
+  {
+    if (toks[i].toktyp == OP_LBRACE)
+    {
+      const char* str_ifw[] = { "if", "while", "for" };
+      fprintf(stdout, "[%s:%d] (warning) Suspicious semicolon after %s-stmt.\n", s->file_path, toks[i - 1].lineno, str_ifw[if_while_for] );
+    }
+    state = 0; /* goto 0 */
+    seen_while = 0;
+    seen_do = 0;
+  }
+  
 
-       if (toks[i].toktyp == OP_LPAREN) { paren_lvl += 1; }
+       if (toks[i].toktyp == OP_LBRACE) { brace_lvl += 1; }
+  else if (toks[i].toktyp == OP_RBRACE) { brace_lvl -= 1; }
+  else if (toks[i].toktyp == OP_LPAREN) { paren_lvl += 1; }
   else if (toks[i].toktyp == OP_RPAREN) { paren_lvl -= 1; }
 
   if (paren_lvl < 0) { paren_lvl = 0; }
+  if (brace_lvl < 0) { brace_lvl = 0; }
 
 }
 
