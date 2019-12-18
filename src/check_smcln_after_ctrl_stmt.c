@@ -8,8 +8,6 @@ static int paren_lvl_s1 = 0;
 static int do_brace_lvl = 0;
 static int state = 0;
 static int if_while_for = 0;
-static int seen_do = 0;
-static int seen_while = 0;
 
 
 /* reset balance counter when loading new file */
@@ -17,16 +15,21 @@ void check_smcln_after_ctrl_stmt_init(void)
 {
   paren_lvl = 0;
   paren_lvl_s1 = 0;
+  brace_lvl = 0;
+  do_brace_lvl = 0;
   state = 0;
   if_while_for = 0;
-  seen_do = 0;
-  seen_while = 0;
-  do_brace_lvl = 0;
+}
+
+static void _reset(void)
+{
+  state = 0;
 }
 
 void check_smcln_after_ctrl_stmt_new_token(struct source_file* s, struct token* toks, int tok_idx)
 {
   int i = tok_idx;
+  
   if (    (state == -1)
        && (toks[i].toktyp == OP_SEMICOLON)
        && ((do_brace_lvl - brace_lvl) == 0))
@@ -49,9 +52,9 @@ void check_smcln_after_ctrl_stmt_new_token(struct source_file* s, struct token* 
       paren_lvl_s1 = paren_lvl;
       switch (toks[i].symbol[0])
       {
-        case 'i': if_while_for = 0;                 break;
-        case 'w': if_while_for = 1; seen_while = 1; break;
-        case 'f': if_while_for = 2;                 break;
+        case 'i': if_while_for = 0; break;
+        case 'w': if_while_for = 1; break;
+        case 'f': if_while_for = 2; break;
       }
     }
   }
@@ -74,7 +77,7 @@ void check_smcln_after_ctrl_stmt_new_token(struct source_file* s, struct token* 
     }
     else if (toks[i].toktyp == OP_SEMICOLON && if_while_for != 2)
     {
-      state = 4; /* goto 4->0 */
+      _reset();
     }
   }
   else if (state == 2)
@@ -85,7 +88,7 @@ void check_smcln_after_ctrl_stmt_new_token(struct source_file* s, struct token* 
     }
     else
     {
-      state = 4; /* goto 4->0 */
+      _reset();
     }
   }
   else if (state == 3)
@@ -95,14 +98,9 @@ void check_smcln_after_ctrl_stmt_new_token(struct source_file* s, struct token* 
       const char* str_ifw[] = { "if", "while", "for" };
       fprintf(stdout, "[%s:%d] (warning) Suspicious semicolon after %s-stmt.\n", s->file_path, toks[i - 1].lineno, str_ifw[if_while_for] );
     }
-    state = 4; /* goto 4->0 */
+    _reset();
   }
-  else if (state == 4)
-  {
-    state = 0; /* goto 0 */
-    seen_while = 0;
-    seen_do = 0;
-  }
+
   
 
        if (toks[i].toktyp == OP_LBRACE) { brace_lvl += 1; }
