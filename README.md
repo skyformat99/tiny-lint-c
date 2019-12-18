@@ -2,7 +2,7 @@
 ## A small and simple static analysis tool for C implemented in C
 ### Description
 
-A small ["linter"](https://en.wikipedia.org/wiki/Lint_(software)) for C written in C99, demonstrating [static analysis](https://en.wikipedia.org/wiki/Static_program_analysis) at the [lexical](https://en.wikipedia.org/wiki/Lexical_analysis) level of abstraction.
+A small ["linter"](https://en.wikipedia.org/wiki/Lint_(software)) for C written in C99, demonstrating shallow [static analysis](https://en.wikipedia.org/wiki/Static_program_analysis) at the [lexical](https://en.wikipedia.org/wiki/Lexical_analysis) level of abstraction.
 
 There are currently three checks implemented:
 
