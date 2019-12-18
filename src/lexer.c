@@ -501,23 +501,25 @@ static void consume(struct lexer* l)
 static void skip_comments(struct lexer* l)
 {
   /* Handle comments: */
-  if (    (l->buffer[0] == '/')
-       && (l->buffer[1] == '*')) // C style comment: /* ... */
+  if (    (l->buffer[0] == '/')           // C style comment: /* ... */
+       && (l->buffer[1] == '*'))
   {
     next(l);   /* skip </> */
     next(l);   /* skip <*> */
-    while (    (l->buffer[0] != '*')
-            || (l->buffer[1] != '/'))
+    while (    (l->buffer[0] != 0)        /* Avoid reading garbage */
+            && (    (l->buffer[0] != '*')
+                 || (l->buffer[1] != '/')))
     {
       next(l); /* body of comment: ignore it */
     }
     next(l);   /* skip <*> */
     next(l);   /* skip </> */
   }
-  else if (    (l->buffer[0] == '/')
-            && (l->buffer[1] == '/'))     /* C++ style comment: // .... */
+  else if (    (l->buffer[0] == '/')      /* C++ style comment: // .... */
+            && (l->buffer[1] == '/'))
   {
-    while (l->buffer[0] != '\n')
+    while (    (l->buffer[0] != 0)        /* Avoid reading garbage */
+            && (l->buffer[0] != '\n'))    /* Consume chars until line ends */
     {
       next(l);
     }
