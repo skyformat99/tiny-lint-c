@@ -27,18 +27,14 @@ void check_smcln_after_ctrl_stmt_new_token(struct source_file* s, struct token* 
   int i = tok_idx;
 
   /* TODO: handle do { ... } while(); better */
-  if (    (strncmp("do", toks[i].symbol, 2) == 0)
-       && (toks[i].symlen == 2))
+  if (toks[i].toktyp == KW_DO)
   {
     seen_do = 1;
   }
 
-  if (    (    (strncmp("if", toks[i].symbol, 2) == 0)
-            && (toks[i].symlen == 2))
-       || (    (strncmp("while", toks[i].symbol, 5) == 0)
-            && (toks[i].symlen == 5))
-       || (    (strncmp("for", toks[i].symbol, 3) == 0)
-            && (toks[i].symlen == 3)))
+  if (    (toks[i].toktyp == KW_IF)
+       || (toks[i].toktyp == KW_FOR)
+       || (toks[i].toktyp == KW_WHILE))
   {
     state = 1;
     paren_lvl_s1 = paren_lvl;
