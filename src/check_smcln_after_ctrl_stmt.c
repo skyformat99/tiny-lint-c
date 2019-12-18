@@ -1,10 +1,11 @@
 #include "check_smcln_after_ctrl_stmt.h"
 #include <stdio.h>
-#include <string.h> /* strncmp */
 
 
-static int paren_lvl = 0; /* balance of '(', ')' */
-static int paren_lvl_s1 = 0; /* balance of '(', ')' */
+static int paren_lvl = 0;    /* balance of '(', ')' */
+static int brace_lvl = 0;    /* balance of '{', '}' */
+static int paren_lvl_s1 = 0;
+static int do_brace_lvl = 0;
 static int state = 0;
 static int if_while_for = 0;
 static int seen_do = 0;
@@ -20,29 +21,38 @@ void check_smcln_after_ctrl_stmt_init(void)
   if_while_for = 0;
   seen_do = 0;
   seen_while = 0;
+  do_brace_lvl = 0;
 }
 
 void check_smcln_after_ctrl_stmt_new_token(struct source_file* s, struct token* toks, int tok_idx)
 {
   int i = tok_idx;
-
-  /* TODO: handle do { ... } while(); better */
-  if (toks[i].toktyp == KW_DO)
+  if (    (state == -1)
+       && (toks[i].toktyp == OP_SEMICOLON)
+       && ((do_brace_lvl - brace_lvl) == 0))
   {
-    seen_do = 1;
+    state = 0;
   }
-
-  if (    (toks[i].toktyp == KW_IF)
-       || (toks[i].toktyp == KW_FOR)
-       || (toks[i].toktyp == KW_WHILE))
+  else if (state == 0)
   {
-    state = 1;
-    paren_lvl_s1 = paren_lvl;
-    switch (toks[i].symbol[0])
+    if (    (toks[i - 1].toktyp == KW_DO)
+         && (toks[  i  ].toktyp == OP_LBRACE))
     {
-      case 'i': if_while_for = 0;                 break;
-      case 'w': if_while_for = 1; seen_while = 1; break;
-      case 'f': if_while_for = 2;                 break;
+      state = -1;
+      do_brace_lvl = brace_lvl;
+    }
+    else if (    (toks[i].toktyp == KW_IF)
+              || (toks[i].toktyp == KW_FOR)
+              || (toks[i].toktyp == KW_WHILE))
+    {
+      state = 1;
+      paren_lvl_s1 = paren_lvl;
+      switch (toks[i].symbol[0])
+      {
+        case 'i': if_while_for = 0;                 break;
+        case 'w': if_while_for = 1; seen_while = 1; break;
+        case 'f': if_while_for = 2;                 break;
+      }
     }
   }
   else if (state == 1)
@@ -82,12 +92,8 @@ void check_smcln_after_ctrl_stmt_new_token(struct source_file* s, struct token* 
   {
     if (toks[i].toktyp == OP_LBRACE)
     {
-      if (!(    (seen_do == 1)
-             && (seen_while == 1)))
-      {
-        const char* str_ifw[] = { "if", "while", "for" };
-        fprintf(stdout, "[%s:%d] (warning) Suspicious semicolon after %s-stmt.\n", s->file_path, toks[i - 1].lineno, str_ifw[if_while_for] );
-      }
+      const char* str_ifw[] = { "if", "while", "for" };
+      fprintf(stdout, "[%s:%d] (warning) Suspicious semicolon after %s-stmt.\n", s->file_path, toks[i - 1].lineno, str_ifw[if_while_for] );
     }
     state = 4; /* goto 4->0 */
   }
@@ -97,11 +103,15 @@ void check_smcln_after_ctrl_stmt_new_token(struct source_file* s, struct token* 
     seen_while = 0;
     seen_do = 0;
   }
+  
 
-       if (toks[i].toktyp == OP_LPAREN) { paren_lvl += 1; }
+       if (toks[i].toktyp == OP_LBRACE) { brace_lvl += 1; }
+  else if (toks[i].toktyp == OP_RBRACE) { brace_lvl -= 1; }
+  else if (toks[i].toktyp == OP_LPAREN) { paren_lvl += 1; }
   else if (toks[i].toktyp == OP_RPAREN) { paren_lvl -= 1; }
 
   if (paren_lvl < 0) { paren_lvl = 0; }
+  if (brace_lvl < 0) { brace_lvl = 0; }
 
 }
 
