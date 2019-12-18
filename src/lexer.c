@@ -272,7 +272,7 @@ struct token lexer_next_token(struct lexer* l)
         /* Found a match? */
         if (i != l->nkeywords)
         {
-          emit(l, &t, l->lexemes[i].tokknd, i);
+          emit(l, &t, l->lexemes[i].tokknd, l->lexemes[i].toktyp);
           return t;
         }
 
