@@ -6,7 +6,7 @@
 #define STR_BUF_SZ          (4 * 1024 * 1024) /* string-buffer size */
 
 static char str_buffer[STR_BUF_SZ];           /* string-buffer */
-static int  str_idx;                          /* index -- how many bytes arein use */
+static int  str_idx;                          /* index -- how many bytes are in use */
 
 
 
