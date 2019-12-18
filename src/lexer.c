@@ -461,12 +461,12 @@ static void emit(struct lexer* l, struct token* next_tok, int token_kind, int to
 {
   expect(l, l->token_length > 0);
   l->token_buffer[l->token_length] = 0;
-  next_tok->symbol = str_copy(l->token_buffer);
-  next_tok->symlen = l->token_length;
-  next_tok->tokknd = token_kind;
-  next_tok->toktyp = token_type;
-  next_tok->lineno = l->cur_lineno;
-  next_tok->byteno = l->cur_byteno;
+  next_tok->symbol  = str_copy(l->token_buffer);
+  next_tok->symlen  = l->token_length;
+  next_tok->tokknd  = token_kind;
+  next_tok->toktyp  = token_type;
+  next_tok->lineno  = l->cur_lineno;
+  next_tok->byteno  = l->cur_byteno;
   next_tok->foffset = (l->buffer - l->buffer_original);
 
   //print_token(l, next_tok);
