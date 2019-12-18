@@ -45,7 +45,7 @@
 #include "lexer.h"
 #include "str.h"
 #include <assert.h> /* for assert            */
-#include <stdlib.h> /* for malloc() + free() */
+#include <stdlib.h> /* for exit              */
 #include <stdio.h>  /* for printf + fgetc    */
 #include <stdint.h> /* for intX_t            */
 #include <string.h> /* for strncmp           */
