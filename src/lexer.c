@@ -378,7 +378,7 @@ void lexer_setup_alphabet(struct lexer* l)
   ADD_TOKEN("[",          TOK_OPERATOR,   OP_LBRACKET);
   ADD_TOKEN("]",          TOK_OPERATOR,   OP_RBRACKET);
 
-  /* The 32 reserved keywords of C: */
+  /* Some C99 Keywords */
   ADD_TOKEN("int8_t",     TOK_KEYWORD,    KW_INT);
   ADD_TOKEN("int16_t",    TOK_KEYWORD,    KW_INT);
   ADD_TOKEN("int32_t",    TOK_KEYWORD,    KW_INT);
@@ -388,6 +388,7 @@ void lexer_setup_alphabet(struct lexer* l)
   ADD_TOKEN("uint32_t",   TOK_KEYWORD,    KW_INT);
   ADD_TOKEN("uint64_t",   TOK_KEYWORD,    KW_INT);
 
+  /* The 32 reserved keywords of C: */
   ADD_TOKEN("auto",       TOK_KEYWORD,    KW_AUTO);
   ADD_TOKEN("break",      TOK_KEYWORD,    KW_BREAK);
   ADD_TOKEN("case",       TOK_KEYWORD,    KW_CASE);
