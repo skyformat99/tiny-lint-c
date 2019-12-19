@@ -28,7 +28,9 @@ char* str_copy(const char* string)
   {
     str_buffer[str_idx + i] = string[i];
     if (string[i] == 0)
+    {
       break;
+    }
   }
   str_idx += i + 1;
 
