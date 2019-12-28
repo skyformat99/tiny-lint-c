@@ -260,7 +260,7 @@ struct token lexer_next_token(struct lexer* l)
 
         /* Keywords */
         uint32_t i;
-        for (i = 0; i < idx_first_tok_keyword; ++i)
+        for (i = 0; i < idx_first_tok_keyword; ++i) /* only searching for operators */
         {
           if (    (l->lexemes[i].tokknd == TOK_OPERATOR)
                && (strncmp(l->buffer, l->lexemes[i].symbol, l->lexemes[i].symlen) == 0))
@@ -476,7 +476,7 @@ static void emit(struct lexer* l, struct token* next_tok, int token_kind, int to
   next_tok->byteno  = l->cur_byteno;
   next_tok->foffset = (l->buffer - l->buffer_original);
 
-  if (next_tok->tokknd == TOK_IDENTIFIER)
+  if (next_tok->tokknd == TOK_IDENTIFIER) /* Did we match a keyword? */
   {
     uint32_t i;
     for (i = idx_first_tok_keyword; i < l->nkeywords; ++i)
