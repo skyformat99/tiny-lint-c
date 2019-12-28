@@ -382,6 +382,8 @@ void lexer_setup_alphabet(struct lexer* l)
   ADD_TOKEN("[",          TOK_OPERATOR,   OP_LBRACKET);
   ADD_TOKEN("]",          TOK_OPERATOR,   OP_RBRACKET);
 
+  /* Setup sentinel-index for first keyword-token.
+     This is used to stop greedy keyword-matching inside identifiers. */
   idx_first_tok_keyword = OP_RBRACKET + 1;
 
   /* Some C99 Keywords */
