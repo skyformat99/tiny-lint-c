@@ -52,6 +52,9 @@
 
 
 
+static int idx_first_tok_keyword;
+
+
 /* assertion function that prints out line and char number before exiting. */
 static void _expect(struct lexer* l, int p, int line);
 #define expect(l, p) _expect(l, p, __LINE__)
@@ -257,9 +260,10 @@ struct token lexer_next_token(struct lexer* l)
 
         /* Keywords */
         uint32_t i;
-        for (i = 0; i < l->nkeywords; ++i)
+        for (i = 0; i < idx_first_tok_keyword; ++i)
         {
-          if (strncmp(l->buffer, l->lexemes[i].symbol, l->lexemes[i].symlen) == 0)
+          if (    (l->lexemes[i].tokknd == TOK_OPERATOR)
+               && (strncmp(l->buffer, l->lexemes[i].symbol, l->lexemes[i].symlen) == 0))
           {
             uint32_t j;
             for (j = 0; j < l->lexemes[i].symlen; ++j)
@@ -270,7 +274,7 @@ struct token lexer_next_token(struct lexer* l)
           }
         }
         /* Found a match? */
-        if (i != l->nkeywords)
+        if (i != idx_first_tok_keyword)
         {
           emit(l, &t, l->lexemes[i].tokknd, l->lexemes[i].toktyp);
           return t;
@@ -378,6 +382,8 @@ void lexer_setup_alphabet(struct lexer* l)
   ADD_TOKEN("[",          TOK_OPERATOR,   OP_LBRACKET);
   ADD_TOKEN("]",          TOK_OPERATOR,   OP_RBRACKET);
 
+  idx_first_tok_keyword = OP_RBRACKET + 1;
+
   /* Some C99 Keywords */
   ADD_TOKEN("int8_t",     TOK_KEYWORD,    KW_INT);
   ADD_TOKEN("int16_t",    TOK_KEYWORD,    KW_INT);
@@ -470,7 +476,21 @@ static void emit(struct lexer* l, struct token* next_tok, int token_kind, int to
   next_tok->byteno  = l->cur_byteno;
   next_tok->foffset = (l->buffer - l->buffer_original);
 
-  //print_token(l, next_tok);
+  if (next_tok->tokknd == TOK_IDENTIFIER)
+  {
+    uint32_t i;
+    for (i = idx_first_tok_keyword; i < l->nkeywords; ++i)
+    {
+      if (    (l->lexemes[i].tokknd == TOK_KEYWORD)
+           && (l->lexemes[i].symlen == l->token_length)
+           && (strncmp(l->token_buffer, l->lexemes[i].symbol, l->token_length) == 0))
+      {
+        next_tok->tokknd = l->lexemes[i].tokknd;
+        next_tok->toktyp = l->lexemes[i].toktyp;
+        break;
+      }
+    }
+  }
 
   l->token_length = 0;
 }
