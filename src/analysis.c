@@ -104,8 +104,9 @@ static void analysis_new_token(void)
   int tok_idx = (ntokens - 1);
 
   /* Disabled checks:
-  check_assign_in_ctrl_stmt_new_token(&s, toks, tok_idx);
-  */
+     None at the moment... */
+  
+  check_assign_in_ctrl_stmt_new_token(&s, toks, tok_idx);  
   check_missing_void_new_token(&s, toks, tok_idx);
   check_misleading_var_name_new_token(&s, toks, tok_idx);
   check_smcln_after_ctrl_stmt_new_token(&s, toks, tok_idx);
