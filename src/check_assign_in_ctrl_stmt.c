@@ -5,6 +5,7 @@
 
 static int paren_lvl = 0; /* balance of '(', ')' */
 static int paren_lvl_s1 = 0; /* balance of '(', ')' */
+static int paren_lvl_s1_max = 0;
 static int state = 0;
 static int if_while_for = 0;
 static int nsemicolons_s1 = 0;
@@ -30,10 +31,17 @@ void check_assign_in_ctrl_stmt_new_token(struct source_file* s, struct token* to
 {
   int i = tok_idx;
 
-  if (    (toks[i].toktyp == KW_IF)
-       || (toks[i].toktyp == KW_FOR)
-       || (toks[i].toktyp == KW_WHILE))
+  if (    (    (strncmp("if", toks[i].symbol, 2)    == 0)
+            && (toks[i].symlen == 2)        )
+       || (    (strncmp("while", toks[i].symbol, 5) == 0)
+            && (toks[i].symlen == 5)        )
+       || (    (strncmp("for", toks[i].symbol, 3)   == 0)
+            && (toks[i].symlen == 3)        ))
   {
+    /*
+    printf("toks[i].toktyp == %d\n", toks[i].toktyp);
+    printf("toks[i].symbol == '%s'\n", toks[i].symbol);
+    */
     found_defect = 0;
     state = 1;
     nsemicolons_s1 = 0;
@@ -63,7 +71,7 @@ void check_assign_in_ctrl_stmt_new_token(struct source_file* s, struct token* to
       if (found_defect && (ncommas_s1 == ncommas_defect))
       {
         const char* str_ifw[] = { "if", "while", "for" };
-        if (if_while_for != 2 || ((nsemicolons_s1 == 3) ||  (nsemicolons_s1 == 1))) /* for-loop? then check middle expression Y in 'FOR ( X ; Y ; Z )' */
+        if (if_while_for != 2 || ((nsemicolons_s1 == 3) || (nsemicolons_s1 == 1))) /* for-loop? then check middle expression Y in 'FOR ( X ; Y ; Z )' */
         {
           fprintf(stdout, "[%s:%d] (warning) Assignment in expression controlling program flow (%s-stmt).\n", s->file_path, toks[i - 1].lineno, str_ifw[if_while_for]);
         }
@@ -92,7 +100,4 @@ void check_assign_in_ctrl_stmt_new_token(struct source_file* s, struct token* to
   if (paren_lvl < 0) { paren_lvl = 0; }
 
 }
-
-
-
 
